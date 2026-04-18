@@ -305,6 +305,109 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
+        .game-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .game-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .game-container {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #ff9a9e;
+        }
+
+        .game-description {
+            color: #555;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .game-input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .guess-input {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 120px;
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .guess-input:focus {
+            outline: none;
+            border-color: #ff9a9e;
+        }
+
+        .guess-button {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .guess-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 154, 158, 0.4);
+        }
+
+        .new-game-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .new-game-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .game-feedback {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 15px 0;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-stats {
+            color: #666;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
         /* Fireworks styles */
         .firework {
             position: fixed;
@@ -400,6 +503,23 @@
                         Gửi
                     </button>
                 </form>
+            </div>
+
+            <div class="game-section">
+                <h3 class="game-title">
+                    <i class="fas fa-gamepad"></i>
+                    Game Đố Số Nhanh
+                </h3>
+                <div class="game-container">
+                    <p class="game-description">Máy tính đã nghĩ một số từ 1 đến 100. Hãy đoán xem!</p>
+                    <div class="game-input-group">
+                        <input type="number" id="guessInput" placeholder="Nhập số..." min="1" max="100" class="guess-input">
+                        <button onclick="makeGuess()" class="guess-button">Đoán</button>
+                        <button onclick="startNewGame()" class="new-game-button">Game Mới</button>
+                    </div>
+                    <div id="gameFeedback" class="game-feedback"></div>
+                    <div id="gameStats" class="game-stats">Chưa bắt đầu game nào</div>
+                </div>
             </div>
 
             </div>
@@ -578,7 +698,82 @@
                     updateSendButtonState(textarea, sendButton);
                 });
             }
+
+            // Initialize game
+            startNewGame();
+
+            // Add Enter key listener for game input
+            const guessInput = document.getElementById('guessInput');
+            if (guessInput) {
+                guessInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        makeGuess();
+                    }
+                });
+            }
         });
+
+        // Game variables
+        let targetNumber = 0;
+        let attempts = 0;
+        let gamesPlayed = 0;
+        let totalAttempts = 0;
+
+        function startNewGame() {
+            targetNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+            document.getElementById('guessInput').value = '';
+            document.getElementById('gameFeedback').innerHTML = '<span style="color: #ff9a9e;">🎯 Game mới đã bắt đầu! Hãy đoán số từ 1-100</span>';
+            updateGameStats();
+        }
+
+        function makeGuess() {
+            const guessInput = document.getElementById('guessInput');
+            const guess = parseInt(guessInput.value);
+
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                document.getElementById('gameFeedback').innerHTML = '<span style="color: #ff6b35;">⚠️ Vui lòng nhập số từ 1 đến 100!</span>';
+                return;
+            }
+
+            attempts++;
+            let feedback = '';
+
+            if (guess === targetNumber) {
+                feedback = `<span style="color: #4CAF50;">🎉 Chính xác! Số là ${targetNumber}. Bạn đoán đúng sau ${attempts} lần!</span>`;
+                gamesPlayed++;
+                totalAttempts += attempts;
+
+                // Show celebration
+                setTimeout(() => {
+                    for (let i = 0; i < 10; i++) {
+                        setTimeout(() => createHeart(), i * 100);
+                    }
+                }, 500);
+
+            } else if (guess < targetNumber) {
+                feedback = `<span style="color: #2196F3;">📈 Quá thấp! Hãy thử số lớn hơn</span>`;
+            } else {
+                feedback = `<span style="color: #ff9800;">📉 Quá cao! Hãy thử số nhỏ hơn</span>`;
+            }
+
+            document.getElementById('gameFeedback').innerHTML = feedback;
+            updateGameStats();
+
+            if (guess === targetNumber) {
+                setTimeout(() => {
+                    if (confirm('🎊 Chúc mừng! Bạn muốn chơi lại không?')) {
+                        startNewGame();
+                    }
+                }, 1500);
+            }
+        }
+
+        function updateGameStats() {
+            const avgAttempts = gamesPlayed > 0 ? (totalAttempts / gamesPlayed).toFixed(1) : 0;
+            document.getElementById('gameStats').textContent =
+                `Đã chơi: ${gamesPlayed} game | Trung bình: ${avgAttempts} lần đoán/game | Lần đoán hiện tại: ${attempts}`;
+        }
     </script>
 </body>
 </html>
